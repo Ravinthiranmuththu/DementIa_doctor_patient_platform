@@ -15,6 +15,8 @@ const chapters = [
 ];
 
 const ChaptersSection = () => {
+
+  
   return (
     <div className="flex justify-center items-center bg-white h-full">
       <div className="bg-white text-black shadow-lg rounded-lg w-full max-w-[44rem] border-2 border-custom-blue p-2 flex-grow">
