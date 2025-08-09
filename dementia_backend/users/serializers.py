@@ -2,9 +2,9 @@ import uuid
 import random
 import string
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from users.models import Patient
 
+from django.contrib.auth import get_user_model
+from users.models import Patient, Recording
 User = get_user_model()
 
 
@@ -15,10 +15,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-        'first_name', 'last_name', 'email', 'password',
-        're_enter_password', 'user_type', 'slmc_id'
+            'first_name', 'last_name', 'email', 'password',
+            're_enter_password', 'user_type', 'slmc_id'
         ]
-
         extra_kwargs = {
             'password': {'write_only': True},
             'slmc_id': {'required': True}
@@ -74,6 +73,13 @@ class PatientSerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
         }
 
+
+# Serializer for Recording model
+class RecordingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recording
+        fields = ['id', 'patient', 'audio_file', 'uploaded_at', 'description']
+        read_only_fields = ['id', 'uploaded_at']
     def create(self, validated_data):
         # Your existing create logic remains exactly the same
         doctor = self.context['request'].user

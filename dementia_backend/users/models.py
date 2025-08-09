@@ -37,7 +37,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         (PATIENT, 'Patient'),
     ]
 
-    username = models.CharField(max_length=150, unique=True, blank=True, null=True)  # 👈 Added
+    username = models.CharField(max_length=150, unique=True, blank=True, null=True)
     email = models.EmailField(unique=True, null=True, blank=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
@@ -47,7 +47,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
-    USERNAME_FIELD = 'username'  # 👈 Changed
+    USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'slmc_id']
 
     objects = CustomUserManager()
@@ -75,3 +75,12 @@ class Patient(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+
+class Recording(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='recordings')
+    audio_file = models.FileField(upload_to='recordings/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f"Recording for {self.patient} at {self.uploaded_at.strftime('%Y-%m-%d %H:%M:%S')}"

@@ -5,13 +5,18 @@ from .views import (
     PatientLoginView,
     LogoutView,
     PatientViewSet,
-    PatientProfileView
+    PatientProfileView,
+    MyPatientProfileView,
+    RecordingViewSet,
 )
 
 from rest_framework.routers import DefaultRouter
 
+
+
 router = DefaultRouter()
 router.register(r'patients', PatientViewSet, basename='patients')
+router.register(r'recordings', RecordingViewSet, basename='recordings')
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -23,4 +28,7 @@ urlpatterns = [
 urlpatterns += router.urls
 urlpatterns += [
     path('patient-profile/<str:username>/', PatientProfileView.as_view(), name='patient-profile'),
+    path('patient/me/', MyPatientProfileView.as_view(), name='my-patient-profile'),
 ]
+
+

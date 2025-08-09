@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { Play, Pause, Download, Calendar, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Play, Pause, Download, ArrowLeft, ArrowRight } from 'lucide-react';
 import NavBar from '../components/NavBar';
 
 const PatientProfile = () => {
   const { username } = useParams();
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // Removed because it's unused
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +29,7 @@ const PatientProfile = () => {
 
  
   // Mock data for graph - replace with actual API data
-  const mockGraphData = {
+  const mockGraphData = React.useMemo(() => ({
     monthly: [
       { name: 'Week 1', accuracy: 65 },
       { name: 'Week 2', accuracy: 75 },
@@ -50,36 +50,34 @@ const PatientProfile = () => {
       { name: 'Apr', accuracy: 80 },
       { name: 'May', accuracy: 82 },
     ]
-  };
-
-  const fetchPatientProfile = async () => {
-    try {
-      // Replace with your actual API endpoint
-      const response = await axios.get(`http://127.0.0.1:8000/api/patient-profile/${username}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_Token')}`,//not standerdized access token
-        },
-      });
-      setProfile(response.data);
-      
-      // Set initial graph data
-      setGraphData(mockGraphData[timeRange]);
-    } catch (error) {
-      setError('Failed to fetch patient profile');
-      console.error('Error fetching profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }), []);
 
   useEffect(() => {
+    const fetchPatientProfile = async () => {
+      try {
+        // Replace with your actual API endpoint
+        const response = await axios.get(`http://127.0.0.1:8000/api/patient-profile/${username}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_Token')}`,//not standerdized access token
+          },
+        });
+        setProfile(response.data);
+        // Set initial graph data
+        setGraphData(mockGraphData[timeRange]);
+      } catch (error) {
+        setError('Failed to fetch patient profile');
+        console.error('Error fetching profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchPatientProfile();
-  }, [username]);
+  }, [username, timeRange, mockGraphData]);
 
   useEffect(() => {
     // Update graph when time range changes
     setGraphData(mockGraphData[timeRange]);
-  }, [timeRange]);
+  }, [timeRange, mockGraphData]);
 
   const handlePlayRecording = (recording) => {
     setCurrentRecording(recording);

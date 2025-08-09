@@ -22,6 +22,16 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 
 const Home = () => {
   const navigate = useNavigate();
+  // State for PDF navigation (by username)
+  const [pdfUsername, setPdfUsername] = useState('');
+  // Handler for navigating to PDF page by username
+  const handleGoToPDF = () => {
+    if (!pdfUsername.trim()) {
+      alert('Please enter a patient username');
+      return;
+    }
+    navigate(`/patient-pdf/${pdfUsername}`);
+  };
   const [modalOpen, setModalOpen] = useState(null);
   const [form, setForm] = useState({
     email: '',
@@ -345,7 +355,24 @@ const Home = () => {
           Delete Patient
         </button>
       </Modal>
-    </>
+    {/* PDF Navigation Section (by username) */}
+    <div className="fixed bottom-8 right-8 bg-white shadow-lg rounded-xl p-4 flex items-center space-x-2 z-40">
+      <input
+        type="text"
+        placeholder="Enter Patient Username"
+        className="border rounded-lg p-2"
+        value={pdfUsername}
+        onChange={e => setPdfUsername(e.target.value)}
+        style={{ width: 180 }}
+      />
+      <button
+        className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+        onClick={handleGoToPDF}
+      >
+        Go to PDF
+      </button>
+    </div>
+  </>
   );
 };
 
