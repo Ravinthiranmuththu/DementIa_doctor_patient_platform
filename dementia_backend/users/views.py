@@ -6,8 +6,42 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny
+<<<<<<< HEAD
 from .serializers import UserRegistrationSerializer, PatientSerializer, RecordingSerializer  # Add RecordingSerializer here
 from .models import Patient, Recording  # Add Recording here
+=======
+from .serializers import UserRegistrationSerializer, PatientSerializer, RecordingSerializer
+from .models import Patient, Recording
+# Recording API: Patients upload, doctors list by patient
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class RecordingViewSet(viewsets.ModelViewSet):
+    queryset = Recording.objects.all()
+    serializer_class = RecordingSerializer
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'patient'):
+            # Patient: only their own recordings
+            return Recording.objects.filter(patient=user.patient)
+        elif hasattr(user, 'patients'):
+            # Doctor: filter by patient if provided
+            patient_id = self.request.query_params.get('patient_id')
+            if patient_id:
+                return Recording.objects.filter(patient__id=patient_id, patient__doctor=user)
+            # All their patients' recordings
+            return Recording.objects.filter(patient__doctor=user)
+        return Recording.objects.none()
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if hasattr(user, 'patient'):
+            serializer.save(patient=user.patient)
+        else:
+            raise PermissionError('Only patients can upload recordings.')
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
 from .permissions import IsDoctor, IsPatient
 import uuid
 import random
@@ -249,6 +283,7 @@ class MyPatientProfileView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Patient.DoesNotExist:
             return Response({"error": "Patient profile not found."}, status=status.HTTP_404_NOT_FOUND)
+<<<<<<< HEAD
 
 
 
@@ -329,3 +364,5 @@ class SendPatientCredentialsView(APIView):
             return Response({"success": f"Credentials sent to {email_to_send}"})
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+=======
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6

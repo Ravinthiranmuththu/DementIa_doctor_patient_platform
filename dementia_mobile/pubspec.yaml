@@ -1,5 +1,9 @@
 name: dementia_mobile
+<<<<<<< HEAD
 description: "A Flutter Web dementia patient app"
+=======
+description: "A new Flutter project."
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -10,6 +14,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+<<<<<<< HEAD
+=======
+
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
   cupertino_icons: ^1.0.8
   http: ^1.1.0
   flutter_secure_storage: ^9.0.0

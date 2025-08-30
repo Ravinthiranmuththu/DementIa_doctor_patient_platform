@@ -1,14 +1,26 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useRef } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
+<<<<<<< HEAD
 import { Play, Pause, Download } from 'lucide-react';
+=======
+import { Play, Pause, Download, ArrowLeft, ArrowRight } from 'lucide-react';
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
 import NavBar from '../components/NavBar';
 
 const PatientProfile = () => {
   const { username } = useParams();
+<<<<<<< HEAD
+=======
+  // const navigate = useNavigate(); // Removed because it's unused
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,6 +40,11 @@ const PatientProfile = () => {
 
   const audioRef = useRef(null);
 
+<<<<<<< HEAD
+=======
+ 
+  // Mock data for graph - replace with actual API data
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
   const mockGraphData = React.useMemo(() => ({
     monthly: [
       { name: 'Week 1', accuracy: 65 },
@@ -52,6 +69,7 @@ const PatientProfile = () => {
   }), []);
 
   useEffect(() => {
+<<<<<<< HEAD
     const fetchData = async () => {
       try {
         const profileResponse = await axios.get(
@@ -69,10 +87,27 @@ const PatientProfile = () => {
       } catch (error) {
         setError('Failed to fetch data');
         console.error('Error fetching data:', error);
+=======
+    const fetchPatientProfile = async () => {
+      try {
+        // Replace with your actual API endpoint
+        const response = await axios.get(`http://127.0.0.1:8000/api/patient-profile/${username}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_Token')}`,//not standerdized access token
+          },
+        });
+        setProfile(response.data);
+        // Set initial graph data
+        setGraphData(mockGraphData[timeRange]);
+      } catch (error) {
+        setError('Failed to fetch patient profile');
+        console.error('Error fetching profile:', error);
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
       } finally {
         setLoading(false);
       }
     };
+<<<<<<< HEAD
 
     fetchData();
 
@@ -82,6 +117,9 @@ const PatientProfile = () => {
         audioRef.current = null;
       }
     };
+=======
+    fetchPatientProfile();
+>>>>>>> 25bbeaea32f89c467b1258f821d604b4e48deaa6
   }, [username, timeRange, mockGraphData]);
 
   useEffect(() => {
