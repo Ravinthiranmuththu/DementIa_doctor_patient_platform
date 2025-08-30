@@ -71,7 +71,18 @@ class Patient(models.Model):
     address = models.TextField(blank=True)
     emergency_contact = models.CharField(max_length=15, blank=True)
     medical_history = models.TextField(blank=True)
+    # New field to store generated password temporarily
+    generated_password = models.CharField(max_length=128, blank=True, null=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+class Recording(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='recordings')
+    recording_file = models.FileField(upload_to='recordings/%Y/%m/%d/')
+    created_at = models.DateTimeField(auto_now_add=True)
+    duration = models.PositiveIntegerField(help_text="Duration in seconds")
+    transcript = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Recording {self.id} - {self.patient.user.username} - {self.created_at}"

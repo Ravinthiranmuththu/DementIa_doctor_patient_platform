@@ -1,3 +1,4 @@
+# views.py
 from django.shortcuts import render
 from rest_framework import status, viewsets
 from rest_framework.response import Response
@@ -5,12 +6,20 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import UserRegistrationSerializer, PatientSerializer
-from .models import Patient
+from .serializers import UserRegistrationSerializer, PatientSerializer, RecordingSerializer  # Add RecordingSerializer here
+from .models import Patient, Recording  # Add Recording here
 from .permissions import IsDoctor, IsPatient
 import uuid
 import random
 import string
+from rest_framework.parsers import MultiPartParser, FormParser
+
+# Add to imports
+from django.conf import settings
+import os
+from datetime import datetime
+from django.core.mail import send_mail
+
 
 User = get_user_model()
 
@@ -155,7 +164,8 @@ class PatientViewSet(viewsets.ModelViewSet):
             gender=data.get('gender'),
             address=data.get('address'),
             emergency_contact=data.get('emergency_contact'),
-            medical_history=data.get('medical_history')
+            medical_history=data.get('medical_history'),
+            generated_password=password
         )
 
         serializer = self.get_serializer(patient)
@@ -228,3 +238,94 @@ class PatientProfileView(APIView):
 
         except Patient.DoesNotExist:
             return Response({"error": "Patient not found."}, status=status.HTTP_404_NOT_FOUND)
+
+class MyPatientProfileView(APIView):
+    permission_classes = [IsAuthenticated, IsPatient]
+
+    def get(self, request):
+        try:
+            patient = request.user.patient
+            serializer = PatientSerializer(patient)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Patient.DoesNotExist:
+            return Response({"error": "Patient profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class RecordingUploadView(APIView):
+    permission_classes = [IsAuthenticated, IsPatient]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        try:
+            patient = request.user.patient
+        except Patient.DoesNotExist:
+            return Response({"error": "Patient profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get duration from request
+        duration = request.data.get('duration', 0)
+        
+        # Create serializer with additional data
+        serializer = RecordingSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            recording = serializer.save(patient=patient, duration=duration)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PatientRecordingsView(APIView):
+    permission_classes = [IsAuthenticated, IsDoctor]
+
+    def get(self, request, patient_username):
+        try:
+            patient = Patient.objects.get(user__username=patient_username, doctor=request.user)
+        except Patient.DoesNotExist:
+            return Response({"error": "Patient not found or unauthorized"}, status=status.HTTP_404_NOT_FOUND)
+
+        recordings = Recording.objects.filter(patient=patient).order_by('-created_at')
+        serializer = RecordingSerializer(recordings, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class MyRecordingsView(APIView):
+    permission_classes = [IsAuthenticated, IsPatient]
+
+    def get(self, request):
+        try:
+            patient = request.user.patient
+        except Patient.DoesNotExist:
+            return Response({"error": "Patient profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        recordings = Recording.objects.filter(patient=patient).order_by('-created_at')
+        serializer = RecordingSerializer(recordings, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+
+class SendPatientCredentialsView(APIView):
+    permission_classes = [IsAuthenticated, IsDoctor]
+
+    def post(self, request, username):  # Change parameter from patient_id to username
+        try:
+            # Find patient by username instead of ID
+            patient = Patient.objects.get(user__username=username, doctor=request.user)
+        except Patient.DoesNotExist:
+            return Response({"error": "Patient not found"}, status=404)
+
+        email_to_send = request.data.get("email")  # new email entered by doctor
+        if not email_to_send:
+            return Response({"error": "Please provide an email"}, status=400)
+
+        if not patient.generated_password:
+            return Response({"error": "Patient has no generated password"}, status=400)
+
+        try:
+            send_mail(
+                subject="Your login credentials",
+                message=f"Username: {patient.user.username}\nPassword: {patient.generated_password}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email_to_send],
+            )
+            return Response({"success": f"Credentials sent to {email_to_send}"})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

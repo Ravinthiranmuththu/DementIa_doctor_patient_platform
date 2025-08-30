@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import PatientUser from './pages/PatientUser';
 import GraphTab from './pages/GraphTab';
 import ChapterPage from './pages/ChapterPage';
+import PatientPDFPage from './pages/PatientPDFPage';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
 
           <Route path="/graph-tab" element={<GraphTab />} />
           <Route path="/home/patient/:chapterId" element={<ChapterPage />} />
+          <Route path="/patient-pdf/:username" element={<PatientPDFPage />} />
         </Routes>
       </div>
     </Router>

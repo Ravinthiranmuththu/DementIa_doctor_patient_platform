@@ -5,7 +5,12 @@ from .views import (
     PatientLoginView,
     LogoutView,
     PatientViewSet,
-    PatientProfileView
+    PatientProfileView,
+    MyPatientProfileView,
+    RecordingUploadView,  # Add this import
+    PatientRecordingsView,  # Add this import
+    MyRecordingsView,  # Add this import
+    SendPatientCredentialsView,
 )
 
 from rest_framework.routers import DefaultRouter
@@ -23,4 +28,10 @@ urlpatterns = [
 urlpatterns += router.urls
 urlpatterns += [
     path('patient-profile/<str:username>/', PatientProfileView.as_view(), name='patient-profile'),
+    path('patient/me/', MyPatientProfileView.as_view(), name='my-patient-profile'),
+    path('recordings/upload/', RecordingUploadView.as_view(), name='recording-upload'),
+    path('doctor/patient-recordings/<str:patient_username>/', PatientRecordingsView.as_view(), name='patient-recordings'),
+    path('patient/my-recordings/', MyRecordingsView.as_view(), name='my-recordings'),
+    #path('patients/<int:patient_id>/send-credentials/', SendPatientCredentialsView.as_view(), name='send-patient-credentials'),
+    path('patients/<str:username>/send-credentials/', SendPatientCredentialsView.as_view(), name='send-patient-credentials'),
 ]

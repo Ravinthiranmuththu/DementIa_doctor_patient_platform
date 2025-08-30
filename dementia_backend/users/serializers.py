@@ -4,6 +4,7 @@ import string
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from users.models import Patient
+from users.models import Recording
 
 User = get_user_model()
 
@@ -133,4 +134,19 @@ class PatientSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['generated_username'] = getattr(instance, '_generated_username', '')
         rep['generated_password'] = getattr(instance, '_generated_password', '')
+        return rep
+    
+
+
+class RecordingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recording
+        fields = ['id', 'recording_file', 'created_at', 'duration', 'transcript']
+        read_only_fields = ['id', 'created_at']
+        
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        request = self.context.get('request')
+        if request and instance.recording_file:
+            rep['recording_file'] = request.build_absolute_uri(instance.recording_file.url)
         return rep
